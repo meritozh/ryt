@@ -1,11 +1,19 @@
 use glam::DVec3;
 use image::ImageBuffer;
-use ryt::ray::{ray_color, Point3, Ray};
+use ryt::{
+    hit_list::HittableList,
+    ray::{ray_color, Point3, Ray},
+    sphere::Sphere,
+};
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let image_height: u32 = ((image_width as f64 / aspect_ratio).floor()) as u32;
+
+    let mut world = HittableList::new();
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     let viewport_height = 2.0;
     let viewport_width = aspect_ratio * viewport_height;
@@ -26,7 +34,7 @@ fn main() {
             origin,
             direction: lower_left_corner + u * horizontal + v * vertical - origin,
         };
-        let color: [u8; 3] = ray_color(r)
+        let color: [u8; 3] = ray_color(&r, &world)
             .to_array()
             .map(|val| (val * 255.999) as u8)
             .try_into()
