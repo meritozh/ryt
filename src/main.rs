@@ -26,7 +26,7 @@ fn main() {
     let mut rng = rand::thread_rng();
     let chaos = Uniform::new(0.0, 1.0);
 
-    for (x, y, pixel) in image.enumerate_pixels_mut() {
+    image.enumerate_pixels_mut().for_each(|(x, y, pixel)| {
         let mut color = Color::new(0.0, 0.0, 0.0);
         (0..samples_per_pixel as i64).for_each(|_| {
             let u = (x as f64 + chaos.sample(&mut rng)) / (image_width - 1) as f64;
@@ -41,8 +41,8 @@ fn main() {
                 .map(|val| (256.0 * val.clamp(0.0, 0.999)) as u8);
 
             *pixel = image::Rgb(color);
-        });
-    }
+        })
+    });
 
     image.save("output.png").unwrap();
 }
