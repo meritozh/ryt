@@ -92,6 +92,7 @@ pub fn random_unit_vector() -> DVec3 {
     random_in_unit_sphere().normalize()
 }
 
+#[allow(dead_code)]
 #[inline]
 fn random_in_hemisphere(normal: &DVec3) -> DVec3 {
     let in_unit_sphere = random_in_unit_sphere();
