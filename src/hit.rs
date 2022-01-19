@@ -1,6 +1,11 @@
+use std::rc::Rc;
+
 use glam::DVec3;
 
-use crate::ray::{Point3, Ray};
+use crate::{
+    material::Material,
+    ray::{Point3, Ray},
+};
 
 #[derive(Default)]
 pub struct HitRecord {
@@ -8,6 +13,7 @@ pub struct HitRecord {
     pub normal: DVec3,
     pub t: f64,
     pub front_face: bool,
+    pub material: Option<Rc<Box<dyn Material>>>,
 }
 
 impl HitRecord {

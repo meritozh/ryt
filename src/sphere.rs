@@ -1,14 +1,22 @@
+use std::rc::Rc;
+
 use crate::hit::{HitRecord, Hittable};
+use crate::material::Material;
 use crate::ray::Point3;
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    material: Rc<Box<dyn Material>>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
-        Sphere { center, radius }
+    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Self {
+        Sphere {
+            center,
+            radius,
+            material: Rc::new(material),
+        }
     }
 }
 
@@ -38,6 +46,7 @@ impl Hittable for Sphere {
 
         let outward_normal = (record.p - self.center) / self.radius;
         record.set_face_normal(ray, outward_normal);
+        record.material = Some(self.material.clone());
 
         return true;
     }

@@ -2,7 +2,10 @@ use image::ImageBuffer;
 use rand::{distributions::Uniform, prelude::Distribution};
 use ryt::{
     camera::Camera,
+    dielectric::Dielectric,
     hit_list::HittableList,
+    lambertian::Lambertian,
+    metal::Metal,
     ray::{ray_color, Color, Point3},
     sphere::Sphere,
 };
@@ -18,8 +21,42 @@ fn main() {
     let max_depth = 50;
 
     let mut world = HittableList::new();
-    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+
+    let material_ground = Box::new(Lambertian {
+        albedo: Color::new(0.8, 0.8, 0.0),
+    });
+    let material_center = Box::new(Lambertian {
+        albedo: Color::new(0.7, 0.3, 0.3),
+    });
+    let material_left = Box::new(Metal {
+        albedo: Color::new(0.8, 0.8, 0.8),
+        fuzz: 0.3,
+    });
+    let material_right = Box::new(Metal {
+        albedo: Color::new(0.8, 0.6, 0.2),
+        fuzz: 1.0,
+    });
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground,
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
+    )));
 
     let camera = Camera::new();
 
@@ -41,7 +78,7 @@ fn main() {
                 .to_array()
                 .map(|val| val * scale)
                 // gamma correction
-                .map(|val| f64::sqrt(val))
+                .map(|val| val.sqrt())
                 .map(|val| (256.0 * val.clamp(0.0, 0.999)) as u8);
             *pixel = image::Rgb(color);
         })

@@ -40,7 +40,18 @@ impl Random for DVec3 {
     }
 }
 
-#[derive(Debug)]
+pub(crate) trait NearZero {
+    fn near_zero(&self) -> bool;
+}
+
+impl NearZero for DVec3 {
+    fn near_zero(&self) -> bool {
+        let precision = 1e-8;
+        self.to_array().iter().all(|val| f64::abs(*val) < precision)
+    }
+}
+
+#[derive(Debug, Default)]
 pub struct Ray {
     pub origin: Point3,
     pub direction: DVec3,
@@ -66,12 +77,28 @@ pub fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> f64 {
     }
 }
 
-fn random_in_unit_sphere() -> DVec3 {
+#[inline]
+pub fn random_in_unit_sphere() -> DVec3 {
     loop {
         let p = DVec3::random_by(-1.0, 1.0);
         if p.length_squared() < 1.0 {
             break p;
         }
+    }
+}
+
+#[inline]
+pub fn random_unit_vector() -> DVec3 {
+    random_in_unit_sphere().normalize()
+}
+
+#[inline]
+fn random_in_hemisphere(normal: &DVec3) -> DVec3 {
+    let in_unit_sphere = random_in_unit_sphere();
+    if in_unit_sphere.dot(*normal) > 0.0 {
+        in_unit_sphere
+    } else {
+        -in_unit_sphere
     }
 }
 
@@ -83,17 +110,17 @@ pub fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i64) -> Color {
     }
 
     if world.hit(ray, 0.001, f64::INFINITY, &mut record) {
-        let target = record.p + record.normal + random_in_unit_sphere();
-        return 0.5
-            * ray_color(
-                &Ray {
-                    origin: record.p,
-                    direction: target - record.p,
-                },
-                world,
-                depth - 1,
-            );
+        let mut scattered = Ray::default();
+        let mut attenuation = Color::default();
+
+        if record.material.as_ref().map_or(false, |v| {
+            v.scatter(ray, &record, &mut attenuation, &mut scattered)
+        }) {
+            return attenuation * ray_color(&scattered, world, depth - 1);
+        }
+        return Color::new(0.0, 0.0, 0.0);
     }
+
     let unit_direction = ray.direction.normalize();
     let t = 0.5 * (unit_direction.y + 1.0);
     return (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0);

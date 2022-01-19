@@ -33,7 +33,6 @@ impl Hittable for HittableList {
             if object.hit(ray, t_min, closest_so_far, record) {
                 hit_anything = true;
                 closest_so_far = record.t;
-                // record = &mut temp_record;
             }
         });
 
