@@ -6,7 +6,7 @@ use crate::{
     ray::{random_in_unit_sphere, Color, Ray},
 };
 
-fn reflect(v: DVec3, n: DVec3) -> DVec3 {
+pub(crate) fn reflect(v: DVec3, n: DVec3) -> DVec3 {
     v - 2.0 * v.dot(n) * n
 }
 
