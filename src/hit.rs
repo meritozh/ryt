@@ -13,7 +13,7 @@ pub struct HitRecord {
     pub normal: DVec3,
     pub t: f64,
     pub front_face: bool,
-    pub material: Option<Rc<Box<dyn Material>>>,
+    pub material: Option<Rc<dyn Material>>,
 }
 
 impl HitRecord {

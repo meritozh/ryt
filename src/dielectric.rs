@@ -1,4 +1,5 @@
 use glam::DVec3;
+use rand::{distributions::Uniform, prelude::Distribution};
 
 use crate::{
     hit::HitRecord,
@@ -12,6 +13,11 @@ fn refract(uv: DVec3, n: DVec3, etai_over_etat: f64) -> DVec3 {
     let r_out_perp = etai_over_etat * (uv + cos_theta * n);
     let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
     return r_out_perp + r_out_parallel;
+}
+
+fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+    let r0 = (1.0 - ref_idx) / (1.0 + ref_idx).powi(2);
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
 
 pub struct Dielectric {
@@ -39,7 +45,12 @@ impl Material for Dielectric {
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
 
-        let direction = if cannot_refract {
+        let mut rng = rand::thread_rng();
+        let chaos = Uniform::new(0.0, 1.0);
+
+        let direction = if cannot_refract
+            || reflectance(cos_theta, refraction_ratio) > chaos.sample(&mut rng)
+        {
             reflect(unit_direction, hit_record.normal)
         } else {
             refract(unit_direction, hit_record.normal, refraction_ratio)

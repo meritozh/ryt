@@ -6,7 +6,7 @@ use crate::hit::{HitRecord, Hittable};
 pub type Point3 = DVec3;
 pub type Color = DVec3;
 
-trait Random {
+pub trait Random {
     fn random() -> Self;
 
     fn random_by(min: f64, max: f64) -> Self;
@@ -20,8 +20,6 @@ impl Random for DVec3 {
         let x = chaos.sample(&mut rng);
         let y = chaos.sample(&mut rng);
         let z = chaos.sample(&mut rng);
-
-        // println!("{x}, {y}, {z}");
 
         Self::new(x, y, z)
     }
@@ -100,6 +98,19 @@ fn random_in_hemisphere(normal: &DVec3) -> DVec3 {
         in_unit_sphere
     } else {
         -in_unit_sphere
+    }
+}
+
+#[inline]
+pub fn random_in_unit_disk() -> DVec3 {
+    let mut rng = rand::thread_rng();
+    let choas = Uniform::new(-1.0, 1.0);
+
+    loop {
+        let p = DVec3::new(choas.sample(&mut rng), choas.sample(&mut rng), 0.0);
+        if p.length_squared() < 1.0 {
+            break p;
+        }
     }
 }
 

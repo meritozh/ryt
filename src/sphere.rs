@@ -7,15 +7,15 @@ use crate::ray::Point3;
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    material: Rc<Box<dyn Material>>,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Self {
+    pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Self {
         Sphere {
             center,
             radius,
-            material: Rc::new(material),
+            material,
         }
     }
 }
