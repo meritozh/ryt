@@ -8,6 +8,8 @@ pub struct HittableList {
     objects: Vec<Box<dyn Hittable>>,
 }
 
+unsafe impl Sync for HittableList {}
+
 impl HittableList {
     pub fn new() -> Self {
         Self {

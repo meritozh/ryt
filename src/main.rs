@@ -1,8 +1,10 @@
 use std::rc::Rc;
 
 use glam::DVec3;
-use image::ImageBuffer;
+use image::RgbImage;
+use ndarray::{Array2, ShapeBuilder, Zip};
 use rand::{distributions::Uniform, prelude::Distribution};
+
 use ryt::{
     camera::Camera,
     dielectric::Dielectric,
@@ -110,29 +112,33 @@ fn main() {
         dist_to_focus,
     );
 
-    let mut image = ImageBuffer::new(image_width, image_height);
-
-    let mut rng = rand::thread_rng();
     let chaos = Uniform::new(0.0, 1.0);
+    let mut indices = Array2::<u8>::zeros((image_height as usize, image_width as usize).f());
+    let buffer = Zip::indexed(&mut indices)
+        .par_map_collect(|(x, y), _| {
+            let mut rng = rand::thread_rng();
+            let mut color = Color::new(0.0, 0.0, 0.0);
 
-    image.enumerate_pixels_mut().for_each(|(x, y, pixel)| {
-        let mut color = Color::new(0.0, 0.0, 0.0);
-        (0..samples_per_pixel as i64).for_each(|_| {
-            let u = (x as f64 + chaos.sample(&mut rng)) / (image_width - 1) as f64;
-            let v = 1.0 - ((y as f64 - chaos.sample(&mut rng)) / (image_height - 1) as f64);
-            let ray = camera.get_ray(u, v);
+            let mut pixel = [0; 3];
+            (0..samples_per_pixel as i64).for_each(|_| {
+                let u = (x as f64 + chaos.sample(&mut rng)) / (image_width - 1) as f64;
+                let v = 1.0 - ((y as f64 - chaos.sample(&mut rng)) / (image_height - 1) as f64);
+                let ray = camera.get_ray(u, v);
 
-            color += ray_color(&ray, &world, max_depth);
+                color += ray_color(&ray, &world, max_depth);
 
-            let color = color
-                .to_array()
-                .map(|val| val * scale)
-                // gamma correction
-                .map(|val| val.sqrt())
-                .map(|val| (256.0 * val.clamp(0.0, 0.999)) as u8);
-            *pixel = image::Rgb(color);
+                pixel = color
+                    .to_array()
+                    .map(|val| val * scale)
+                    // gamma correction
+                    .map(|val| val.sqrt())
+                    .map(|val| (256.0 * val.clamp(0.0, 0.999)) as u8);
+            });
+            pixel
         })
-    });
-
+        .into_iter()
+        .flat_map(|s| s)
+        .collect();
+    let image = RgbImage::from_vec(image_width, image_height, buffer).unwrap();
     image.save("output.png").unwrap();
 }
