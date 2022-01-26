@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use glam::DVec3;
 use image::RgbImage;
@@ -19,10 +19,10 @@ use ryt::{
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let ground_material = Rc::new(Lambertian {
+    let ground_material = Arc::new(Lambertian {
         albedo: Color::new(0.5, 0.5, 0.5),
     });
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_material,
@@ -41,42 +41,42 @@ fn random_scene() -> HittableList {
             );
 
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere_material: Rc<dyn Material> = if choose_material < 0.8 {
+                let sphere_material: Arc<dyn Material + Send + Sync> = if choose_material < 0.8 {
                     let albedo = Color::random() * Color::random();
-                    Rc::new(Lambertian { albedo })
+                    Arc::new(Lambertian { albedo })
                 } else if choose_material < 0.95 {
                     let albedo = Color::random_by(0.5, 1.0);
                     let fuzz = 0.0;
-                    Rc::new(Metal { albedo, fuzz })
+                    Arc::new(Metal { albedo, fuzz })
                 } else {
-                    Rc::new(Dielectric { ir: 1.5 })
+                    Arc::new(Dielectric { ir: 1.5 })
                 };
-                world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
             }
         });
     });
 
-    let material1 = Rc::new(Dielectric { ir: 1.5 });
-    world.add(Box::new(Sphere::new(
+    let material1 = Arc::new(Dielectric { ir: 1.5 });
+    world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
     )));
 
-    let material2 = Rc::new(Lambertian {
+    let material2 = Arc::new(Lambertian {
         albedo: Color::new(0.4, 0.2, 0.1),
     });
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     )));
 
-    let material3 = Rc::new(Metal {
+    let material3 = Arc::new(Metal {
         albedo: Color::new(0.7, 0.6, 0.5),
         fuzz: 0.0,
     });
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
         material3,
@@ -90,7 +90,7 @@ fn main() {
     let image_width = 1200;
     let image_height: u32 = ((image_width as f64 / aspect_ratio).floor()) as u32;
 
-    let samples_per_pixel = 500.0;
+    let samples_per_pixel = 5.0;
     let scale = 1.0 / samples_per_pixel;
 
     let max_depth = 50;
@@ -113,7 +113,7 @@ fn main() {
     );
 
     let chaos = Uniform::new(0.0, 1.0);
-    let mut indices = Array2::<u8>::zeros((image_height as usize, image_width as usize).f());
+    let mut indices = Array2::<u8>::zeros((image_width as usize, image_height as usize).f());
     let buffer = Zip::indexed(&mut indices)
         .par_map_collect(|(x, y), _| {
             let mut rng = rand::thread_rng();

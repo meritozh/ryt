@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     hit::{HitRecord, Hittable},
     ray::Ray,
@@ -5,10 +7,8 @@ use crate::{
 
 #[derive(Default)]
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    objects: Vec<Arc<dyn Hittable + Sync + Send>>,
 }
-
-unsafe impl Sync for HittableList {}
 
 impl HittableList {
     pub fn new() -> Self {
@@ -21,7 +21,7 @@ impl HittableList {
         self.objects.clear();
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable + Sync + Send>) {
         self.objects.push(object);
     }
 }

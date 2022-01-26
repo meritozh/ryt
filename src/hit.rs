@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use glam::DVec3;
 
@@ -13,7 +13,7 @@ pub struct HitRecord {
     pub normal: DVec3,
     pub t: f64,
     pub front_face: bool,
-    pub material: Option<Rc<dyn Material>>,
+    pub material: Option<Arc<dyn Material + Sync + Send>>,
 }
 
 impl HitRecord {
