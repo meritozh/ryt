@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use glam::Vec3A;
 use image::RgbImage;
+use indicatif::ProgressBar;
 use rand::{distributions::Uniform, prelude::Distribution};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
@@ -115,6 +116,8 @@ fn main() {
     let chaos = Uniform::new(0.0, 1.0);
 
     let len = image_width * image_height;
+    let progress_bar = ProgressBar::new(len as u64);
+
     let pixels: Vec<u8> = (0..len)
         .into_par_iter()
         .map(|idx| {
@@ -132,6 +135,8 @@ fn main() {
                 color += ray_color(&ray, &world, max_depth);
             });
 
+            progress_bar.inc(1);
+
             color
                 .to_array()
                 .map(|val| val * scale)
@@ -144,4 +149,6 @@ fn main() {
 
     let image = RgbImage::from_raw(image_width, image_height, pixels).unwrap();
     image.save("output.png").unwrap();
+
+    progress_bar.finish();
 }
