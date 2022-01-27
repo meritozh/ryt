@@ -153,7 +153,9 @@ fn main() {
 
     let image = RgbImage::from_raw(image_width, image_height, pixels).unwrap();
     image
-        .save("output_{image_width}x{image_height}_{samples_per_pixel}_{max_depth}.png")
+        .save(format!(
+            "output_{image_width}x{image_height}_{samples_per_pixel}_{max_depth}.png"
+        ))
         .unwrap();
 
     progress_bar.finish();
