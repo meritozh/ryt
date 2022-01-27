@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use glam::Vec3A;
 use image::RgbImage;
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 use rand::{distributions::Uniform, prelude::Distribution};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
@@ -117,6 +117,10 @@ fn main() {
 
     let len = image_width * image_height;
     let progress_bar = ProgressBar::new(len as u64);
+    progress_bar.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]"),
+    );
 
     let pixels: Vec<u8> = (0..len)
         .into_par_iter()
@@ -148,7 +152,9 @@ fn main() {
         .collect();
 
     let image = RgbImage::from_raw(image_width, image_height, pixels).unwrap();
-    image.save("output.png").unwrap();
+    image
+        .save("output_{image_width}x{image_height}_{samples_per_pixel}_{max_depth}.png")
+        .unwrap();
 
     progress_bar.finish();
 }
