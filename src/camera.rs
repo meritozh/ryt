@@ -1,28 +1,28 @@
-use glam::DVec3;
+use glam::Vec3A;
 
 use crate::ray::{random_in_unit_disk, Point3, Ray};
 
 pub struct Camera {
     origin: Point3,
     lower_left_corner: Point3,
-    horizontal: DVec3,
-    vertical: DVec3,
-    u: DVec3,
-    v: DVec3,
+    horizontal: Vec3A,
+    vertical: Vec3A,
+    u: Vec3A,
+    v: Vec3A,
     #[allow(dead_code)]
-    w: DVec3,
-    lens_radius: f64,
+    w: Vec3A,
+    lens_radius: f32,
 }
 
 impl Camera {
     pub fn new(
         lookfrom: Point3,
         lookat: Point3,
-        vup: DVec3,
-        vfov: f64,
-        aspect_ratio: f64,
-        apertune: f64,
-        focus_dist: f64,
+        vup: Vec3A,
+        vfov: f32,
+        aspect_ratio: f32,
+        apertune: f32,
+        focus_dist: f32,
     ) -> Self {
         let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
@@ -51,7 +51,7 @@ impl Camera {
         }
     }
 
-    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
+    pub fn get_ray(&self, s: f32, t: f32) -> Ray {
         let rd = self.lens_radius * random_in_unit_disk();
         let offset = self.u * rd.x + self.v * rd.y;
 

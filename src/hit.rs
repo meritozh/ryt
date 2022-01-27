@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use glam::DVec3;
+use glam::Vec3A;
 
 use crate::{
     material::Material,
@@ -10,14 +10,14 @@ use crate::{
 #[derive(Default)]
 pub struct HitRecord {
     pub p: Point3,
-    pub normal: DVec3,
-    pub t: f64,
+    pub normal: Vec3A,
+    pub t: f32,
     pub front_face: bool,
     pub material: Option<Arc<dyn Material + Sync + Send>>,
 }
 
 impl HitRecord {
-    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: DVec3) {
+    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vec3A) {
         self.front_face = ray.direction.dot(outward_normal) < 0.0;
         self.normal = if self.front_face {
             outward_normal
@@ -28,5 +28,5 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool;
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, record: &mut HitRecord) -> bool;
 }

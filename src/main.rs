@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use glam::DVec3;
+use glam::Vec3A;
 use image::RgbImage;
 use rand::{distributions::Uniform, prelude::Distribution};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
@@ -35,9 +35,9 @@ fn random_scene() -> HittableList {
         (-11..11).for_each(|b| {
             let choose_material = choas.sample(&mut rng);
             let center = Point3::new(
-                a as f64 + 0.9 * choas.sample(&mut rng),
+                a as f32 + 0.9 * choas.sample(&mut rng),
                 0.2,
-                b as f64 + choas.sample(&mut rng),
+                b as f32 + choas.sample(&mut rng),
             );
 
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
@@ -88,7 +88,7 @@ fn random_scene() -> HittableList {
 fn main() {
     let aspect_ratio = 3.0 / 2.0;
     let image_width = 1200;
-    let image_height: u32 = ((image_width as f64 / aspect_ratio).floor()) as u32;
+    let image_height: u32 = ((image_width as f32 / aspect_ratio).floor()) as u32;
 
     let samples_per_pixel = 500.0;
     let scale = 1.0 / samples_per_pixel;
@@ -99,7 +99,7 @@ fn main() {
 
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
     let lookat = Point3::new(0.0, 0.0, 0.0);
-    let vup = DVec3::new(0.0, 1.0, 0.0);
+    let vup = Vec3A::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
     let apertune = 0.1;
     let camera = Camera::new(
@@ -124,9 +124,9 @@ fn main() {
             let mut rng = rand::thread_rng();
             let mut color = Color::new(0.0, 0.0, 0.0);
 
-            (0..samples_per_pixel as i64).for_each(|_| {
-                let u = (x as f64 + chaos.sample(&mut rng)) / (image_width - 1) as f64;
-                let v = 1.0 - ((y as f64 - chaos.sample(&mut rng)) / (image_height - 1) as f64);
+            (0..samples_per_pixel as i32).for_each(|_| {
+                let u = (x as f32 + chaos.sample(&mut rng)) / (image_width - 1) as f32;
+                let v = 1.0 - ((y as f32 - chaos.sample(&mut rng)) / (image_height - 1) as f32);
                 let ray = camera.get_ray(u, v);
 
                 color += ray_color(&ray, &world, max_depth);

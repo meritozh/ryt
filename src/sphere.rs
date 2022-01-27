@@ -6,12 +6,12 @@ use crate::ray::Point3;
 
 pub struct Sphere {
     center: Point3,
-    radius: f64,
+    radius: f32,
     material: Arc<dyn Material + Sync + Send>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, material: Arc<dyn Material + Sync + Send>) -> Self {
+    pub fn new(center: Point3, radius: f32, material: Arc<dyn Material + Sync + Send>) -> Self {
         Sphere {
             center,
             radius,
@@ -21,7 +21,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &crate::ray::Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &crate::ray::Ray, t_min: f32, t_max: f32, record: &mut HitRecord) -> bool {
         let oc = ray.origin - self.center;
         let a = ray.direction.length_squared();
         let half_b = oc.dot(ray.direction);

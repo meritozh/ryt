@@ -1,4 +1,4 @@
-use glam::DVec3;
+use glam::Vec3A;
 
 use crate::{
     hit::HitRecord,
@@ -6,13 +6,13 @@ use crate::{
     ray::{random_in_unit_sphere, Color, Ray},
 };
 
-pub(crate) fn reflect(v: DVec3, n: DVec3) -> DVec3 {
+pub(crate) fn reflect(v: Vec3A, n: Vec3A) -> Vec3A {
     v - 2.0 * v.dot(n) * n
 }
 
 pub struct Metal {
     pub albedo: Color,
-    pub fuzz: f64,
+    pub fuzz: f32,
 }
 
 impl Material for Metal {

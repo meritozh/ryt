@@ -1,18 +1,18 @@
-use glam::DVec3;
+use glam::Vec3A;
 use rand::{distributions::Uniform, prelude::Distribution};
 
 use crate::hit::{HitRecord, Hittable};
 
-pub type Point3 = DVec3;
-pub type Color = DVec3;
+pub type Point3 = Vec3A;
+pub type Color = Vec3A;
 
 pub trait Random {
     fn random() -> Self;
 
-    fn random_by(min: f64, max: f64) -> Self;
+    fn random_by(min: f32, max: f32) -> Self;
 }
 
-impl Random for DVec3 {
+impl Random for Vec3A {
     fn random() -> Self {
         let mut rng = rand::thread_rng();
         let chaos = Uniform::new(0.0, 1.0);
@@ -24,7 +24,7 @@ impl Random for DVec3 {
         Self::new(x, y, z)
     }
 
-    fn random_by(min: f64, max: f64) -> Self {
+    fn random_by(min: f32, max: f32) -> Self {
         let mut rng = rand::thread_rng();
         let chaos = Uniform::new(min, max);
 
@@ -42,26 +42,26 @@ pub(crate) trait NearZero {
     fn near_zero(&self) -> bool;
 }
 
-impl NearZero for DVec3 {
+impl NearZero for Vec3A {
     fn near_zero(&self) -> bool {
         let precision = 1e-8;
-        self.to_array().iter().all(|val| f64::abs(*val) < precision)
+        self.to_array().iter().all(|val| f32::abs(*val) < precision)
     }
 }
 
 #[derive(Debug, Default)]
 pub struct Ray {
     pub origin: Point3,
-    pub direction: DVec3,
+    pub direction: Vec3A,
 }
 
 impl Ray {
-    pub fn at(&self, t: f64) -> Point3 {
+    pub fn at(&self, t: f32) -> Point3 {
         self.origin + t * self.direction
     }
 }
 
-pub fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> f64 {
+pub fn hit_sphere(center: Point3, radius: f32, ray: &Ray) -> f32 {
     let oc = ray.origin - center;
     let a = ray.direction.length_squared();
     let half_b = oc.dot(ray.direction);
@@ -76,9 +76,9 @@ pub fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> f64 {
 }
 
 #[inline]
-pub fn random_in_unit_sphere() -> DVec3 {
+pub fn random_in_unit_sphere() -> Vec3A {
     loop {
-        let p = DVec3::random_by(-1.0, 1.0);
+        let p = Vec3A::random_by(-1.0, 1.0);
         if p.length_squared() < 1.0 {
             break p;
         }
@@ -86,13 +86,13 @@ pub fn random_in_unit_sphere() -> DVec3 {
 }
 
 #[inline]
-pub fn random_unit_vector() -> DVec3 {
+pub fn random_unit_vector() -> Vec3A {
     random_in_unit_sphere().normalize()
 }
 
 #[allow(dead_code)]
 #[inline]
-fn random_in_hemisphere(normal: &DVec3) -> DVec3 {
+fn random_in_hemisphere(normal: &Vec3A) -> Vec3A {
     let in_unit_sphere = random_in_unit_sphere();
     if in_unit_sphere.dot(*normal) > 0.0 {
         in_unit_sphere
@@ -102,26 +102,26 @@ fn random_in_hemisphere(normal: &DVec3) -> DVec3 {
 }
 
 #[inline]
-pub fn random_in_unit_disk() -> DVec3 {
+pub fn random_in_unit_disk() -> Vec3A {
     let mut rng = rand::thread_rng();
     let choas = Uniform::new(-1.0, 1.0);
 
     loop {
-        let p = DVec3::new(choas.sample(&mut rng), choas.sample(&mut rng), 0.0);
+        let p = Vec3A::new(choas.sample(&mut rng), choas.sample(&mut rng), 0.0);
         if p.length_squared() < 1.0 {
             break p;
         }
     }
 }
 
-pub fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i64) -> Color {
+pub fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     let mut record = HitRecord::default();
 
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
 
-    if world.hit(ray, 0.001, f64::INFINITY, &mut record) {
+    if world.hit(ray, 0.001, f32::INFINITY, &mut record) {
         let mut scattered = Ray::default();
         let mut attenuation = Color::default();
 
