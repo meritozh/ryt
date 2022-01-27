@@ -10,4 +10,4 @@ indicatif = "*"
 image = "*"
 glam = "*"
 rand = "*"
-ndarray = { version = "*", features = ["rayon"] }
+rayon = "*"

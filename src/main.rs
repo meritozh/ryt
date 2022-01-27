@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use glam::DVec3;
 use image::RgbImage;
-use ndarray::{Array2, ShapeBuilder, Zip};
 use rand::{distributions::Uniform, prelude::Distribution};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use ryt::{
     camera::Camera,
@@ -113,13 +113,18 @@ fn main() {
     );
 
     let chaos = Uniform::new(0.0, 1.0);
-    let mut indices = Array2::<u8>::zeros((image_width as usize, image_height as usize).f());
-    let buffer = Zip::indexed(&mut indices)
-        .par_map_collect(|(x, y), _| {
+
+    let len = image_width * image_height;
+    let pixels: Vec<u8> = (0..len)
+        .into_par_iter()
+        .map(|idx| {
+            let x = idx as u32 % image_width;
+            let y = idx as u32 / image_height;
+
             let mut rng = rand::thread_rng();
             let mut color = Color::new(0.0, 0.0, 0.0);
 
-            let mut pixel = [0; 3];
+            let mut pixel = [0 as u8; 3];
             (0..samples_per_pixel as i64).for_each(|_| {
                 let u = (x as f64 + chaos.sample(&mut rng)) / (image_width - 1) as f64;
                 let v = 1.0 - ((y as f64 - chaos.sample(&mut rng)) / (image_height - 1) as f64);
@@ -136,9 +141,9 @@ fn main() {
             });
             pixel
         })
-        .into_iter()
-        .flat_map(|s| s)
+        .flat_map(|val| val)
         .collect();
-    let image = RgbImage::from_vec(image_width, image_height, buffer).unwrap();
+
+    let image = RgbImage::from_raw(image_width, image_height, pixels).unwrap();
     image.save("output.png").unwrap();
 }
