@@ -90,7 +90,7 @@ fn main() {
     let image_width = 1200;
     let image_height: u32 = ((image_width as f64 / aspect_ratio).floor()) as u32;
 
-    let samples_per_pixel = 5.0;
+    let samples_per_pixel = 500.0;
     let scale = 1.0 / samples_per_pixel;
 
     let max_depth = 50;
@@ -119,27 +119,25 @@ fn main() {
         .into_par_iter()
         .map(|idx| {
             let x = idx as u32 % image_width;
-            let y = idx as u32 / image_height;
+            let y = idx as u32 / image_width;
 
             let mut rng = rand::thread_rng();
             let mut color = Color::new(0.0, 0.0, 0.0);
 
-            let mut pixel = [0 as u8; 3];
             (0..samples_per_pixel as i64).for_each(|_| {
                 let u = (x as f64 + chaos.sample(&mut rng)) / (image_width - 1) as f64;
                 let v = 1.0 - ((y as f64 - chaos.sample(&mut rng)) / (image_height - 1) as f64);
                 let ray = camera.get_ray(u, v);
 
                 color += ray_color(&ray, &world, max_depth);
-
-                pixel = color
-                    .to_array()
-                    .map(|val| val * scale)
-                    // gamma correction
-                    .map(|val| val.sqrt())
-                    .map(|val| (256.0 * val.clamp(0.0, 0.999)) as u8);
             });
-            pixel
+
+            color
+                .to_array()
+                .map(|val| val * scale)
+                // gamma correction
+                .map(|val| val.sqrt())
+                .map(|val| (256.0 * val.clamp(0.0, 0.999)) as u8)
         })
         .flat_map(|val| val)
         .collect();
