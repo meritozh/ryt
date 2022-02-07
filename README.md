@@ -1,2 +1,2 @@
 # ryt
-a damn simple ray tracer implementation in Rust.
+a damn simple ray tracer implemented in Rust.
