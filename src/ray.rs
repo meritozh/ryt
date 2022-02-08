@@ -53,6 +53,7 @@ impl NearZero for Vec3A {
 pub struct Ray {
     pub origin: Point3,
     pub direction: Vec3A,
+    pub time: f32,
 }
 
 impl Ray {

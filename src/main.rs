@@ -13,6 +13,7 @@ use ryt::{
     lambertian::Lambertian,
     material::Material,
     metal::Metal,
+    moving_sphere::MovingSphere,
     ray::{ray_color, Color, Point3, Random},
     sphere::Sphere,
 };
@@ -31,6 +32,7 @@ fn random_scene() -> HittableList {
 
     let mut rng = rand::thread_rng();
     let choas = Uniform::new(0.0, 1.0);
+    let choas2 = Uniform::new(0.0, 0.5);
 
     (-11..11).for_each(|a| {
         (-11..11).for_each(|b| {
@@ -52,7 +54,19 @@ fn random_scene() -> HittableList {
                 } else {
                     Arc::new(Dielectric { ir: 1.5 })
                 };
-                world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+
+                if choose_material < 0.8 {
+                    let center2 = center + Vec3A::new(0.0, choas2.sample(&mut rng), 0.0);
+                    world.add(Arc::new(MovingSphere::new(
+                        center,
+                        center2,
+                        0.0,
+                        1.0,
+                        0.2,
+                        sphere_material.clone(),
+                    )));
+                }
+                world.add(Arc::new(Sphere::new(center, 0.2, sphere_material.clone())));
             }
         });
     });
@@ -87,11 +101,11 @@ fn random_scene() -> HittableList {
 }
 
 fn main() {
-    let aspect_ratio = 3.0 / 2.0;
-    let image_width = 1200;
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width = 1600;
     let image_height: u32 = ((image_width as f32 / aspect_ratio).floor()) as u32;
 
-    let samples_per_pixel = 500.0;
+    let samples_per_pixel = 100.0;
     let scale = 1.0 / samples_per_pixel;
 
     let max_depth = 50;
@@ -111,6 +125,8 @@ fn main() {
         aspect_ratio,
         apertune,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     let chaos = Uniform::new(0.0, 1.0);

@@ -30,6 +30,7 @@ impl Material for Lambertian {
         *scattered = Ray {
             origin: hit_record.p,
             direction: scatter_direction,
+            time: ray_in.time,
         };
         *attenuation = self.albedo;
         return true;

@@ -59,6 +59,7 @@ impl Material for Dielectric {
         *scattered = Ray {
             origin: hit_record.p,
             direction,
+            time: ray_in.time,
         };
         return true;
     }

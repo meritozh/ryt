@@ -1,4 +1,5 @@
 use glam::Vec3A;
+use rand::{distributions::Uniform, prelude::Distribution};
 
 use crate::ray::{random_in_unit_disk, Point3, Ray};
 
@@ -12,6 +13,8 @@ pub struct Camera {
     #[allow(dead_code)]
     w: Vec3A,
     lens_radius: f32,
+    time0: f32,
+    time1: f32,
 }
 
 impl Camera {
@@ -23,6 +26,8 @@ impl Camera {
         aspect_ratio: f32,
         apertune: f32,
         focus_dist: f32,
+        time0: f32,
+        time1: f32,
     ) -> Self {
         let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
@@ -39,7 +44,7 @@ impl Camera {
         let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - focus_dist * w;
         let lens_radius = apertune / 2.0;
 
-        Camera {
+        Self {
             origin,
             horizontal,
             vertical,
@@ -48,6 +53,8 @@ impl Camera {
             v,
             w,
             lens_radius,
+            time0,
+            time1,
         }
     }
 
@@ -55,11 +62,15 @@ impl Camera {
         let rd = self.lens_radius * random_in_unit_disk();
         let offset = self.u * rd.x + self.v * rd.y;
 
+        let mut rng = rand::thread_rng();
+        let chaos = Uniform::new(self.time0, self.time1);
+
         Ray {
             origin: self.origin + offset,
             direction: self.lower_left_corner + s * self.horizontal + t * self.vertical
                 - self.origin
                 - offset,
+            time: chaos.sample(&mut rng),
         }
     }
 }

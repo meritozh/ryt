@@ -28,6 +28,7 @@ impl Material for Metal {
         *scattered = Ray {
             origin: hit_record.p,
             direction: reflected + self.fuzz * random_in_unit_sphere(),
+            time: ray_in.time,
         };
         *attenuation = self.albedo;
 

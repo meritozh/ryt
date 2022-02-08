@@ -5,5 +5,6 @@ pub mod hit_list;
 pub mod lambertian;
 pub mod material;
 pub mod metal;
+pub mod moving_sphere;
 pub mod ray;
 pub mod sphere;
